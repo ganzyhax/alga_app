@@ -5,12 +5,12 @@ abstract class PassengerEvent {
   List<Object?> get props => [];
 }
 
-class CreatePassengerOrder extends PassengerEvent {
+class PassangerCreateOrder extends PassengerEvent {
   final List<double> pickupLocation;
   final List<double> dropoffLocation;
   final double fare;
 
-  CreatePassengerOrder({
+  PassangerCreateOrder({
     required this.pickupLocation,
     required this.dropoffLocation,
     required this.fare,
@@ -38,3 +38,5 @@ class PassengerCancelOrder extends PassengerEvent {
   // final String orderId;
   // PassengerCancelOrder({required this.orderId});
 }
+
+class PassengerLoad extends PassengerEvent {}

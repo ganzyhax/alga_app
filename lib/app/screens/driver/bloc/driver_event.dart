@@ -36,3 +36,5 @@ class DriverOngoingOrder extends DriverEvent {
   final data;
   DriverOngoingOrder({required this.data});
 }
+
+class DriverLoad extends DriverEvent {}

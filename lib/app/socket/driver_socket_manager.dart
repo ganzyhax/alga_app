@@ -22,12 +22,10 @@ class OrderSocketManager {
 
     socket.onConnect((_) {
       log('Connected successfully to server');
-      socket.emit('registerDriver',
-          '670a5ba9b1c8f9cb4b0a1b8f'); // Replace with actual driver ID
+      socket.emit('registerDriver', '670a5ba9b1c8f9cb4b0a1b8f');
     });
 
     socket.on('newOrder', (data) {
-      log(data.toString());
       _newOrderController.add(data);
     });
 
@@ -37,11 +35,23 @@ class OrderSocketManager {
   }
 
   void acceptOrder(String orderId) {
-    socket.emit('acceptOrder', orderId);
+    socket.emit('accept', orderId);
   }
 
   void rejectOrder(String orderId) {
-    socket.emit('rejectOrder', orderId);
+    socket.emit('reject', orderId);
+  }
+
+  void arrivedOrder(String orderId) {
+    socket.emit('arrived', orderId);
+  }
+
+  void completingOrder(String orderId) {
+    socket.emit('completing', orderId);
+  }
+
+  void completedOrder(String orderId) {
+    socket.emit('completed', orderId);
   }
 
   Stream<dynamic> get newOrderStream => _newOrderController.stream;

@@ -17,3 +17,10 @@ class PassengerOrderFailed extends PassengerState {
 
   PassengerOrderFailed(this.message);
 }
+
+class PassengerLoaded extends PassengerState {
+  final currentOrderData;
+  final bool isSearchingOrder;
+  PassengerLoaded(
+      {required this.currentOrderData, required this.isSearchingOrder});
+}

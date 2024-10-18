@@ -11,6 +11,8 @@ class PassengerSocketManager {
       StreamController.broadcast();
   final StreamController<dynamic> _orderCompletingController =
       StreamController.broadcast();
+  final StreamController<dynamic> _orderCompletedController =
+      StreamController.broadcast();
 
   PassengerSocketManager() {
     _initializeSocket();
@@ -22,9 +24,22 @@ class PassengerSocketManager {
       'autoConnect': false,
     });
 
-    socket.on('orderAccepted', (data) {
-      log('Order accepted: $data');
+    socket.on('accepted', (data) {
+      log('Driver accepted: $data');
       _orderResponseController.add(data);
+    });
+    socket.on('arrived', (data) {
+      log('Driver arrived: $data');
+      _orderArrivedController.add(data);
+    });
+    socket.on('completing', (data) {
+      log('Driver started: $data');
+      _orderCompletingController.add(data);
+    });
+
+    socket.on('completed', (data) {
+      log('Driver accepted: $data');
+      _orderCompletedController.add(data);
     });
 
     socket.onDisconnect((_) {
@@ -45,11 +60,14 @@ class PassengerSocketManager {
 
   Stream<dynamic> get orderCompletingController =>
       _orderCompletingController.stream;
+  Stream<dynamic> get orderCompletedController =>
+      _orderCompletedController.stream;
 
   void dispose() {
     socket.dispose();
     _orderResponseController.close();
     _orderArrivedController.close();
     _orderCompletingController.close();
+    _orderCompletedController.close();
   }
 }

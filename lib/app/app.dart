@@ -1,4 +1,5 @@
 import 'package:alga_app/app/screens/driver/bloc/driver_bloc.dart';
+import 'package:alga_app/app/screens/home/home_screen.dart';
 import 'package:alga_app/app/screens/navigator/bloc/main_navigator_bloc.dart';
 import 'package:alga_app/app/screens/navigator/main_navigator.dart';
 import 'package:alga_app/app/screens/passanger/bloc/passanger_bloc.dart';
@@ -17,8 +18,9 @@ class AlgaApp extends StatelessWidget {
             create: (context) => MainNavigatorBloc()..add(MainNavigatorLoad()),
           ),
           // Provide DriverBloc here
-          BlocProvider(create: (context) => DriverBloc()),
-          BlocProvider(create: (context) => PassengerBloc()),
+          BlocProvider(create: (context) => DriverBloc()..add(DriverLoad())),
+          BlocProvider(
+              create: (context) => PassengerBloc()..add(PassengerLoad())),
         ],
         child: MaterialApp(
           builder: (BuildContext context, Widget? child) {
@@ -31,7 +33,7 @@ class AlgaApp extends StatelessWidget {
           },
           debugShowCheckedModeBanner: false,
           title: 'WeGlobal',
-          home: CustomNavigationBar(),
+          home: HomeScreen(),
         ));
   }
 }

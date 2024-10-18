@@ -6,6 +6,7 @@ final class DriverInitial extends DriverState {}
 
 class DriverLoaded extends DriverState {
   final currentOrderData;
+
   DriverLoaded({required this.currentOrderData});
 }
 
