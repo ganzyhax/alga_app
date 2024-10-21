@@ -1,7 +1,10 @@
 import 'dart:developer';
 
+import 'package:alga_app/app/screens/dgis_map/bloc/map_bloc.dart';
+import 'package:alga_app/app/screens/dgis_map/functions/map_functions.dart';
 import 'package:dgis_mobile_sdk_full/dgis.dart' as sdk;
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart'; // Geolocator package for location
 
 class DGisMapScreen extends StatefulWidget {
@@ -22,7 +25,6 @@ class _DGisMapScreenState extends State<DGisMapScreen> {
   void initState() {
     super.initState();
 
-    // Initialize DGis SDK context
     _sdkContext = sdk.DGis.initialize();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -32,13 +34,10 @@ class _DGisMapScreenState extends State<DGisMapScreen> {
         loader = sdk.ImageLoader(_sdkContext); // Initialize the image loader
       });
     });
-    // Fetch the current location
-    _initLocationService();
 
-    // Wait for the map to be initialized and then access it
+    _initLocationService();
   }
 
-  // Initialize the location service and get the current location using Geolocator
   Future<void> _initLocationService() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -46,38 +45,32 @@ class _DGisMapScreenState extends State<DGisMapScreen> {
     // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location services are not enabled, return early.
       return;
     }
 
-    // Check for location permissions
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.deniedForever) {
-        // Permissions are denied forever, handle appropriately.
         return;
       }
 
       if (permission == LocationPermission.denied) {
-        // Permissions are denied, handle appropriately.
         return;
       }
     }
 
-    // Fetch the current location
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    // Position position = await Geolocator.getCurrentPosition();
 
-    // Move the camera to the user's current location
-    if (_sdkMap != null) {
-      _addMarker(
-        position.latitude,
-        position.longitude,
-        "assets/images/location.png",
-      );
-      _moveCameraToLocation(position.latitude, position.longitude);
-    }
+    // if (_sdkMap != null) {
+    //   _addMarker(
+    //     position.latitude,
+    //     position.longitude,
+    //     "assets/images/location.png",
+    //   );
+    //   DGisMapFunctions(sdkMap: _sdkMap)
+    //       .moveCameraToLocation(position.latitude, position.longitude);
+    // }
   }
 
   void _addMarker(double? lat, lon, String asset) async {
@@ -94,37 +87,23 @@ class _DGisMapScreenState extends State<DGisMapScreen> {
     mapObjectManager.addObject(marker);
   }
 
-  // Function to move the camera to the user's location
-  void _moveCameraToLocation(double? lat, lon) async {
-    final sdk.GeoPoint target = sdk.GeoPoint(
-      latitude: sdk.Latitude(lat!),
-      longitude: sdk.Longitude(lon),
-    );
-
-    // Create marker options
-
-    // Create and add the marker to the map
-    _sdkMap?.camera.move(target, sdk.Zoom(16), sdk.Tilt(0), sdk.Bearing(0),
-        const Duration(milliseconds: 500), sdk.CameraAnimationType.linear);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: sdk.MapWidget(
-        sdkContext: _sdkContext,
-        mapOptions: sdk.MapOptions(),
-        controller: _mapWidgetController = sdk.MapWidgetController(),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // Fetch the current location when the button is pressed
-          Position position = await Geolocator.getCurrentPosition(
-              desiredAccuracy: LocationAccuracy.high);
-
-          _moveCameraToLocation(position.latitude, position.longitude);
+      body: BlocBuilder<MapBloc, MapState>(
+        builder: (context, state) {
+          if (state is MapLoaded) {
+            return sdk.MapWidget(
+              sdkContext: _sdkContext,
+              mapOptions: sdk.MapOptions(),
+              controller: _mapWidgetController = sdk.MapWidgetController(),
+            );
+          } else {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
         },
-        child: const Icon(Icons.my_location),
       ),
     );
   }

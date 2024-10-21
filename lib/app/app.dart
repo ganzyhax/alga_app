@@ -1,4 +1,6 @@
+import 'package:alga_app/app/screens/dgis_map/bloc/map_bloc.dart';
 import 'package:alga_app/app/screens/driver/bloc/driver_bloc.dart';
+import 'package:alga_app/app/screens/home/bloc/home_bloc.dart';
 import 'package:alga_app/app/screens/home/home_screen.dart';
 import 'package:alga_app/app/screens/navigator/bloc/main_navigator_bloc.dart';
 import 'package:alga_app/app/screens/navigator/main_navigator.dart';
@@ -15,9 +17,14 @@ class AlgaApp extends StatelessWidget {
     return MultiBlocProvider(
         providers: [
           BlocProvider(
+            create: (context) => MapBloc()..add(MapLoad()),
+          ),
+          BlocProvider(
             create: (context) => MainNavigatorBloc()..add(MainNavigatorLoad()),
           ),
-          // Provide DriverBloc here
+          BlocProvider(
+            create: (context) => HomeBloc()..add(HomeLoad()),
+          ),
           BlocProvider(create: (context) => DriverBloc()..add(DriverLoad())),
           BlocProvider(
               create: (context) => PassengerBloc()..add(PassengerLoad())),
