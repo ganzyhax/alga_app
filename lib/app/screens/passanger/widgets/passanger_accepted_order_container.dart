@@ -2,6 +2,7 @@ import 'package:alga_app/app/screens/passanger/bloc/passanger_bloc.dart';
 import 'package:alga_app/app/widgets/buttons/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 
 class PassangerAcceptedOrderContainer extends StatelessWidget {
   const PassangerAcceptedOrderContainer({super.key});
@@ -60,7 +61,7 @@ class PassangerAcceptedOrderContainer extends StatelessWidget {
             CustomButton(
               text: 'Отменить заказ',
               onTap: () {
-                BlocProvider.of<PassengerBloc>(context).add(
+                GetIt.instance<PassengerBloc>().add(
                   PassengerCancelOrder(),
                 );
               },

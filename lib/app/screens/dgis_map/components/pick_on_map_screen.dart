@@ -22,31 +22,24 @@ class _PickOnMapScreenState extends State<PickOnMapScreen> {
   late sdk.ImageLoader loader;
   sdk.CameraPosition? _currentCameraPosition;
   Timer? _debounceTimer;
-  List pickedLocation = [];
+  List<double> pickedLocation = [];
   String pickedAddress = '';
 
   @override
   void initState() {
     super.initState();
-
     _sdkContext = sdk.DGis.initialize();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _mapWidgetController?.getMapAsync((map) {
         _sdkMap = map;
         mapObjectManager = sdk.MapObjectManager(_sdkMap!);
-        loader = sdk.ImageLoader(_sdkContext); // Initialize the image loader
+        loader = sdk.ImageLoader(_sdkContext);
 
         // Subscribe to camera position changes
         _sdkMap?.camera.positionChannel.listen((position) {
-          _currentCameraPosition = position; // Update current camera position
-
-          // Cancel previous timer if it exists
+          _currentCameraPosition = position;
           _debounceTimer?.cancel();
-
-          // Start a new timer
-          _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-            // This code will run after the camera has stopped moving for 300 ms
+          _debounceTimer = Timer(const Duration(milliseconds: 400), () {
             pickedLocation = [
               position.point.latitude.value,
               position.point.longitude.value
@@ -61,21 +54,16 @@ class _PickOnMapScreenState extends State<PickOnMapScreen> {
     _initLocationService();
   }
 
-// Define a separate async method for the geocoding
   Future<void> _updatePickedAddress(double latitude, double longitude) async {
     pickedAddress = await DGisMapFunctions(sdkMap: _sdkMap)
         .geocoderLocation(latitude, longitude);
     pickedLocation = [latitude, longitude];
     setState(() {});
-
-    // Optionally call setState if you need to update the UI based on pickedAddress
   }
 
   Future<void> _initLocationService() async {
     bool serviceEnabled;
     LocationPermission permission;
-
-    // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       return;
@@ -92,8 +80,7 @@ class _PickOnMapScreenState extends State<PickOnMapScreen> {
       }
     }
 
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    Position position = await Geolocator.getCurrentPosition();
     _updatePickedAddress(position.latitude, position.longitude);
     if (_sdkMap != null) {
       DGisMapFunctions(sdkMap: _sdkMap)
@@ -131,29 +118,27 @@ class _PickOnMapScreenState extends State<PickOnMapScreen> {
       body: Stack(
         children: [
           sdk.MapWidget(
-            sdkContext: _sdkContext,
-            mapOptions: sdk.MapOptions(),
-            controller: _mapWidgetController = sdk.MapWidgetController(),
-          ),
-          // Center icon for selecting location
-          Positioned(
-            left:
-                MediaQuery.of(context).size.width / 2.2, // Center horizontally
-            top: MediaQuery.of(context).size.height / 2.5, // Center vertically
-            child: Row(
-              children: [
-                Column(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 48, // Size of the icon
-                      color: Colors.red, // Color of the icon
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+              sdkContext: _sdkContext,
+              mapOptions: sdk.MapOptions(),
+              controller: _mapWidgetController = sdk.MapWidgetController(),
+              child: (pickedAddress != '' && pickedAddress != 'Astana')
+                  ? Center(
+                      child: Icon(
+                        Icons.location_on,
+                        size: 48, // Size of the icon
+                        color: Colors.red, // Color of the icon
+                      ),
+                    )
+                  : Container(
+                      height: MediaQuery.of(context).size.height,
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              fit: BoxFit.cover,
+                              image: AssetImage(
+                                'assets/images/map_placeholder.png',
+                              ))),
+                    )),
           Positioned(
             bottom: 40,
             right: 16,

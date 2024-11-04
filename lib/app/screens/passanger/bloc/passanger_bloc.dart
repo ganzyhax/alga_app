@@ -5,16 +5,23 @@ import 'package:alga_app/app/screens/driver/bloc/driver_bloc.dart';
 import 'package:alga_app/app/socket/passanger_socket_manager.dart';
 import 'package:alga_app/constants/app_constant.dart';
 import 'package:bloc/bloc.dart';
+import 'package:http/http.dart';
 
-part 'passanger_event.dart'; // Correct reference to the event part
-part 'passanger_state.dart'; // Correct reference to the state part
+part 'passanger_event.dart';
+part 'passanger_state.dart';
 
 class PassengerBloc extends Bloc<PassengerEvent, PassengerState> {
-  PassengerSocketManager? socketManager; // Only instantiate when needed
+  PassengerSocketManager? socketManager;
 
   PassengerBloc() : super(PassengerInitial()) {
     var currentOrderData;
-    var isSearchingOrder = false;
+    bool isSearchingOrder = false;
+    var addressA;
+    var addressB;
+    String fare = '';
+    int orderType = 0;
+    int payType = 0;
+    var currentOrderDuration;
     on<PassengerEvent>((event, emit) async {
       socketManager = PassengerSocketManager();
       socketManager!.connectAndRegisterPassenger('670a932dcf2d855a4938987d');
@@ -31,7 +38,15 @@ class PassengerBloc extends Bloc<PassengerEvent, PassengerState> {
         add(PassengerOrderResponse(data));
       });
       if (event is PassengerLoad) {
+        addressA = event.addressA;
+        addressB = event.addressB;
         emit(PassengerLoaded(
+            fare: fare,
+            addressA: addressA,
+            currentOrderDuration: currentOrderDuration,
+            addressB: addressB,
+            payType: payType,
+            orderType: orderType,
             currentOrderData: currentOrderData,
             isSearchingOrder: isSearchingOrder));
       }
@@ -42,14 +57,14 @@ class PassengerBloc extends Bloc<PassengerEvent, PassengerState> {
           {
             "pickupLocation": {
               "type": "Point",
-              "coordinates": [71.4340, 51.1291] // Expo 2017
+              "coordinates": addressA['location'] // Expo 2017
             },
             "dropoffLocation": {
               "type": "Point",
-              "coordinates": [71.4272, 51.1424] // Khan Shatyr
+              "coordinates": addressB['location'] // Khan Shatyr
             },
             "orderType": "Econom",
-            "fare": 25.50
+            "fare": fare
           },
           lToken:
               'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MGE5MzJkY2YyZDg1NWE0OTM4OTg3ZCIsInVzZXJJZCI6IjY3MGE5MzJkY2YyZDg1NWE0OTM4OTg3ZCIsImlhdCI6MTcyOTAwNjE3NSwiZXhwIjoxNzI5MDkyNTc1fQ.eQGfx-vsiR8iaHQul6PSNabQVATIkdSPfp79ypBLFI0',
@@ -59,6 +74,12 @@ class PassengerBloc extends Bloc<PassengerEvent, PassengerState> {
         isSearchingOrder = true;
         // Handle API response here if needed
         emit(PassengerLoaded(
+            currentOrderDuration: currentOrderDuration,
+            fare: fare,
+            addressA: addressA,
+            addressB: addressB,
+            payType: payType,
+            orderType: orderType,
             currentOrderData: currentOrderData,
             isSearchingOrder: isSearchingOrder));
       }
@@ -69,26 +90,93 @@ class PassengerBloc extends Bloc<PassengerEvent, PassengerState> {
           emit(PassengerOrderFailed(
               'No drivers available or an error occurred.'));
         }
-
-        // Disconnect the socket if order fails or completes
         socketManager?.dispose();
       }
       if (event is PassengerOngoingOrder) {
-        // Handle ongoing order here
         emit(PassengerOrderConfirmed(orderData: event.data));
-
-        // Optionally keep the socket alive until the order completes
       }
       if (event is PassengerCancelOrder) {
-        // Optionally, you can call an API to cancel the order on the server
         log(currentOrderData['order']['_id']);
         await ApiClient.post('api/passanger/cancel-order',
             {'orderId': currentOrderData['order']['_id']},
             lToken:
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MGE5MzJkY2YyZDg1NWE0OTM4OTg3ZCIsInVzZXJJZCI6IjY3MGE5MzJkY2YyZDg1NWE0OTM4OTg3ZCIsImlhdCI6MTcyODkxOTU4NiwiZXhwIjoxNzI5MDA1OTg2fQ.jUCyUvLYc8kHa-FB1_XA23foFBov8T0LyB6djuMSRfw');
         currentOrderData = null;
-        // Emit initial state after canceling
         emit(PassengerInitial());
+      }
+      if (event is PassangerSetRouteDuration) {
+        currentOrderDuration = event.duration;
+        emit(PassengerLoaded(
+            currentOrderDuration: currentOrderDuration,
+            fare: fare,
+            addressA: addressA,
+            addressB: addressB,
+            payType: payType,
+            orderType: orderType,
+            currentOrderData: currentOrderData,
+            isSearchingOrder: isSearchingOrder));
+      }
+      if (event is PassangerChangePaymentType) {
+        payType = event.paymentType;
+        emit(PassengerLoaded(
+            currentOrderDuration: currentOrderDuration,
+            fare: fare,
+            addressA: addressA,
+            addressB: addressB,
+            payType: payType,
+            orderType: orderType,
+            currentOrderData: currentOrderData,
+            isSearchingOrder: isSearchingOrder));
+      }
+      if (event is PassangerChangeFare) {
+        fare = event.fareValue;
+        log(fare);
+        emit(PassengerLoaded(
+            currentOrderDuration: currentOrderDuration,
+            fare: fare,
+            addressA: addressA,
+            addressB: addressB,
+            payType: payType,
+            orderType: orderType,
+            currentOrderData: currentOrderData,
+            isSearchingOrder: isSearchingOrder));
+      }
+      if (event is PassangerChangeAAddressDetails) {
+        addressA = event.aAddress;
+        emit(PassengerLoaded(
+            currentOrderDuration: currentOrderDuration,
+            fare: fare,
+            addressA: addressA,
+            addressB: addressB,
+            payType: payType,
+            orderType: orderType,
+            currentOrderData: currentOrderData,
+            isSearchingOrder: isSearchingOrder));
+      }
+
+      if (event is PassangerChangeBAddressDetails) {
+        addressB = event.bAddress;
+        emit(PassengerLoaded(
+            currentOrderDuration: currentOrderDuration,
+            fare: fare,
+            addressA: addressA,
+            addressB: addressB,
+            payType: payType,
+            orderType: orderType,
+            currentOrderData: currentOrderData,
+            isSearchingOrder: isSearchingOrder));
+      }
+      if (event is PassangerChangeOrderType) {
+        orderType = event.orderType;
+        emit(PassengerLoaded(
+            currentOrderDuration: currentOrderDuration,
+            fare: fare,
+            addressA: addressA,
+            addressB: addressB,
+            payType: payType,
+            orderType: orderType,
+            currentOrderData: currentOrderData,
+            isSearchingOrder: isSearchingOrder));
       }
     });
   }

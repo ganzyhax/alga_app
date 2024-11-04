@@ -1,3 +1,4 @@
+import 'package:alga_app/app/screens/dgis_map/dgis_map.dart';
 import 'package:alga_app/app/screens/home/bloc/home_bloc.dart';
 import 'package:alga_app/app/screens/navigator/main_navigator.dart';
 import 'package:alga_app/app/widgets/buttons/custom_button.dart';
@@ -217,13 +218,10 @@ class HomeScreen extends StatelessWidget {
                                 backgroundColor: AppColors.secondary,
                                 builder: (context) => AddressSearchModal(
                                   currentAddress: state.locationData['address'],
+                                  currentAddressLocation:
+                                      state.locationData['location'],
                                 ),
                               );
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //       builder: (context) => CustomNavigationBar()),
-                              // );
                             },
                             child: Container(
                               padding: EdgeInsets.all(10),

@@ -1,12 +1,15 @@
-part of 'map_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 
-@immutable
-sealed class MapEvent {}
+abstract class DGisMapEvent {}
 
-final class MapLoad extends MapEvent {}
+class DGisMapLoad extends DGisMapEvent {
+  final List<double> aPoint;
+  final List<double> bPoint;
+  DGisMapLoad({required this.aPoint, required this.bPoint});
+}
 
-final class MapChangeLocation extends MapEvent {
-  final double lat;
-  final double long;
-  MapChangeLocation({required this.lat, required this.long});
+class DGisMapChangeRoute extends DGisMapEvent {
+  final List<double> aPoint;
+  final List<double> bPoint;
+  DGisMapChangeRoute({required this.aPoint, required this.bPoint});
 }

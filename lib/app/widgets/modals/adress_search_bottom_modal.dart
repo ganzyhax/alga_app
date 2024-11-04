@@ -1,14 +1,19 @@
 import 'dart:developer';
 
 import 'package:alga_app/app/screens/dgis_map/components/pick_on_map_screen.dart';
+import 'package:alga_app/app/screens/passanger/bloc/passanger_bloc.dart';
 import 'package:alga_app/app/screens/passanger/passanger_screen.dart';
 import 'package:alga_app/app/widgets/textfield/custom_textfield.dart';
 import 'package:alga_app/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 
 class AddressSearchModal extends StatefulWidget {
   final String currentAddress;
-  AddressSearchModal({required this.currentAddress});
+  final List<dynamic> currentAddressLocation;
+  AddressSearchModal(
+      {required this.currentAddress, required this.currentAddressLocation});
   @override
   _AddressSearchModalState createState() => _AddressSearchModalState();
 }
@@ -24,8 +29,12 @@ class _AddressSearchModalState extends State<AddressSearchModal> {
   @override
   void initState() {
     super.initState();
-    // Add listeners to focus nodes
     _addressAController.text = widget.currentAddress;
+
+    addressesResults['addressA'] = {
+      'location': widget.currentAddressLocation,
+      'address': widget.currentAddress
+    };
     _addressAFocusNode.addListener(() {
       if (_addressAFocusNode.hasFocus) {
         print('Focus on 1st text field');
@@ -76,10 +85,18 @@ class _AddressSearchModalState extends State<AddressSearchModal> {
         _addressAFocusNode.unfocus();
         _addressBFocusNode.unfocus();
         setState(() {});
+
         Navigator.pop(context);
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const PassangerScreen()),
+          MaterialPageRoute(
+              builder: (context) => BlocProvider(
+                    create: (context) => GetIt.instance<PassengerBloc>()
+                      ..add(PassengerLoad(
+                          addressA: addressesResults['addressA'],
+                          addressB: addressesResults['addressB'])),
+                    child: PassangerScreen(),
+                  )),
         );
       }
     } else {}

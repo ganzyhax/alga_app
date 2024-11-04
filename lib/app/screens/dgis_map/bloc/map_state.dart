@@ -1,10 +1,14 @@
-part of 'map_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 
-@immutable
-sealed class MapState {}
+abstract class DGisMapState {}
 
-final class MapInitial extends MapState {}
+class DGisMapLoaded extends DGisMapState {
+  final List<double> aPoint;
+  final List<double> bPoint;
+  bool isInitialize;
 
-final class MapLoaded extends MapState {
-  MapLoaded();
+  DGisMapLoaded(
+      {required this.aPoint, required this.bPoint, required this.isInitialize});
 }
+
+class DGisMapInitial extends DGisMapState {}

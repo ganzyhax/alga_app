@@ -17,7 +17,7 @@ class CustomTextField extends StatefulWidget {
     this.iconData,
     this.focusedIconData, // Accept focused icon
     this.iconColor,
-    required this.focusNode, // Required
+    this.focusNode, // Required
     this.bgColor,
     this.focusedIconColor, // Accept focused icon color
   });
